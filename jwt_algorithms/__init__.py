@@ -1,6 +1,6 @@
 from .algorithms import (
-    SymmetricAlgorithm,
     AsymmetricAlgorithm,
+    SymmetricAlgorithm,
 )
 
 __all__ = [
