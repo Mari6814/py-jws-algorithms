@@ -37,6 +37,8 @@ class SymmetricAlgorithm(Enum):
                 hash_func = hashlib.sha384
             case SymmetricAlgorithm.HS512:
                 hash_func = hashlib.sha512
+            case _:
+                raise ValueError("Unsupported algorithm.")
 
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
