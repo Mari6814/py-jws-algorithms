@@ -7,7 +7,7 @@ only-include = ["jwt_algorithms", "LICENSE", "README.md", "pyproject.toml", "tes
 
 [project]
 name = "jwt-algorithms"
-version = "0.1.0"
+version = "1.0.0"
 description = "Implements the most common JWT algorithms to generate keys or sign and verify payloads without the requirement to first read a lot of documentation just to do the signing and verifying part."
 readme = "README.md"
 requires-python = ">=3.10"
