@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import secrets
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
@@ -9,27 +10,58 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, padding, rsa
 
 
+@dataclass
+class _Secret:
+    """A simple wrapper for secret bytes. This is to avoid confusion with keys. If this doesn't exist, you might accidentally pass a secret to the signature or payload parameter."""
+
+    secret_bytes: bytes
+
+    def __repr__(self) -> str:
+        return f"_Secret(secret_bytes='{self.secret_bytes.hex()}')"
+
+    def __str__(self) -> str:
+        """Return the secret as a latin-1 decoded string, which can natively represent all byte values."""
+        return self.secret_bytes.decode("latin-1")
+
+
 class SymmetricAlgorithm(Enum):
     HS256 = "HMAC-SHA256"
     HS384 = "HMAC-SHA384"
     HS512 = "HMAC-SHA512"
 
-    def generate_secret(self, bytes: int | None = None) -> bytes:
-        """Generate a random key for the algorithm."""
+    def generate_secret(self, num_bytes: int | None = None) -> _Secret:
+        """Generate a random key for the algorithm.
+
+        Args:
+            num_bytes: The number of bytes to generate. If not provided, a sensible default will be used based on the algorithm. For HS256, the default is 32 bytes (256 bits). For HS384, it's 48 bytes (384 bits). For HS512, it's 64 bytes (512 bits).
+
+        Returns:
+            An instance of `_Secret` containing the generated secret bytes. Pass it to the `sign` and `verify` methods. It only wraps your bytes to avoid confusion with payloads or signatures. You can extract the bytes using the `secret_bytes` attribute if you need to store it or use it elsewhere.
+        """
         match self:
             case SymmetricAlgorithm.HS256:
-                return secrets.token_bytes(bytes or 32)
+                secret_bytes = secrets.token_bytes(num_bytes or 32)
             case SymmetricAlgorithm.HS384:
-                return secrets.token_bytes(bytes or 48)
+                secret_bytes = secrets.token_bytes(num_bytes or 48)
             case SymmetricAlgorithm.HS512:
-                return secrets.token_bytes(bytes or 64)
+                secret_bytes = secrets.token_bytes(num_bytes or 64)
+
+        return _Secret(secret_bytes)
 
     def sign(
         self,
         payload: bytes | str,
-        secret: bytes | Path | str,
+        secret: _Secret | bytes | Path | str,
     ) -> bytes:
-        """Sign payload using HMAC with the algorithm's hash function."""
+        """Sign payload using HMAC with the algorithm's hash function.
+
+        Args:
+            payload: The data to sign. A `str` payload will be treated as utf-8 encoded bytes.
+            secret: The secret used to sign the payload. Can be a path to a file or be bytes with the secret. A `str` will be treated as utf-8 bytes. The `_Secret` is generated using the `generate_secret` method to wrap your bytes and is only there to avoid confusion with payloads or signatures.
+
+        Returns:
+            The HMAC signature as bytes. You can encode it as base64 or hex for easier transport.
+        """
         match self:
             case SymmetricAlgorithm.HS256:
                 hash_func = hashlib.sha256
@@ -37,8 +69,6 @@ class SymmetricAlgorithm(Enum):
                 hash_func = hashlib.sha384
             case SymmetricAlgorithm.HS512:
                 hash_func = hashlib.sha512
-            case _:
-                raise ValueError("Unsupported algorithm.")
 
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
@@ -48,16 +78,27 @@ class SymmetricAlgorithm(Enum):
                 secret = secret_file.read()
         elif isinstance(secret, str):
             secret = secret.encode("utf-8")
+        elif isinstance(secret, _Secret):
+            secret = secret.secret_bytes
 
         return hmac.new(secret, payload, hash_func).digest()
 
     def verify(
         self,
         payload: bytes | str,
-        secret: bytes | Path | str,
+        secret: _Secret | bytes | Path | str,
         signature: bytes,
     ) -> bool:
-        """Verify HMAC signature of payload using the algorithm's hash function."""
+        """Verify HMAC signature of payload using the algorithm's hash function.
+
+        Args:
+            payload: The data that was signed. A `str` payload will be treated as utf-8 encoded bytes.
+            secret: The secret used to verify the signature. Can be a path to a file or be bytes with the secret. A `str` will be treated as utf-8 bytes. The `_Secret` is generated using the `generate_secret` method to wrap your bytes and is only there to avoid confusion with payloads or signatures.
+            signature: The signature to verify
+
+        Returns:
+            True if the signature is valid, False otherwise.
+        """
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
 
@@ -66,6 +107,8 @@ class SymmetricAlgorithm(Enum):
                 secret = secret_file.read()
         elif isinstance(secret, str):
             secret = secret.encode("utf-8")
+        elif isinstance(secret, _Secret):
+            secret = secret.secret_bytes
 
         expected_signature = self.sign(payload, secret)
         return hmac.compare_digest(expected_signature, signature)
@@ -94,7 +137,14 @@ class AsymmetricAlgorithm(Enum):
         | tuple[ed25519.Ed25519PublicKey, ed25519.Ed25519PrivateKey]
         | tuple[ed448.Ed448PublicKey, ed448.Ed448PrivateKey]
     ):
-        """Helper to generate a valid key pair for the algorithm."""
+        """Helper to generate a valid key pair for the algorithm.
+
+        Args:
+            password: The password to encrypt the private key, if applicable. A `str` password will be treated as utf-8 bytes.
+
+        Returns:
+            A tuple of (public_key, private_key) suitable for the algorithm.
+        """
         match self:
             case (
                 AsymmetricAlgorithm.RS256
@@ -134,8 +184,6 @@ class AsymmetricAlgorithm(Enum):
             case AsymmetricAlgorithm.EdDSA:
                 ed25519_private_key = ed25519.Ed25519PrivateKey.generate()
                 return ed25519_private_key.public_key(), ed25519_private_key
-            case _:
-                raise ValueError("Unsupported algorithm.")
 
     def sign(
         self,
@@ -157,6 +205,9 @@ class AsymmetricAlgorithm(Enum):
             payload: The data to sign. A `str` payload will be treated as utf-8 encoded bytes.
             private_key: The private key used to sign the payload. Can be a path to PEM or DER encoded file or be bytes with a PEM or DER encoded private key. A `str` will be treated as utf-8 bytes.
             password: The password to decrypt the private key, if applicable. A `str` password will be treated as utf-8 bytes.
+
+        Returns:
+            The signature as bytes. You can encode it as base64 or hex for easier transport.
         """
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
@@ -225,8 +276,11 @@ class AsymmetricAlgorithm(Enum):
             payload: The data that was signed. A `str` payload will be treated as utf-8 encoded bytes.
             public_key: The public key used to verify the signature. Can be a path to PEM or DER encoded file or be in-memory bytes with a PEM or DER encoded public key. A `str` will be treated as utf-8 bytes.
             signature: The signature to verify.
-            force_padding: Optional padding to use for verification when the algorithm requires it. Uses PKCS1v15 for RSA and PSS for RSASSA-PSS if not specified.
-            force_algorithm: Optional signature algorithm to use for verification when using ECDSA. Uses ECDSA if not specified.
+            force_padding: You can ignore this if you don't know what this is. Optional padding to use for verification when the algorithm requires it. Uses PKCS1v15 for RSA and PSS for RSASSA-PSS if not specified.
+            force_algorithm: You can ignore this if you don't know what this is. Optional signature algorithm to use for verification when using ECDSA. Uses ECDSA if not specified.
+
+        Returns:
+            True if the signature is valid, False otherwise.
         """
 
         if isinstance(payload, str):
