@@ -1,6 +1,6 @@
 [![Test](https://github.com/Mari6814/py-jwt-algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/Mari6814/py-jwt-algorithms/actions/workflows/test.yml)
-[![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
-[![Versions](./badges/python-versions.svg)](./badges/python-versions.svg)
+[![Coverage](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/coverage.svg)](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/coverage.svg)
+[![Versions](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/python-versions.svg)](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/python-versions.svg)
 
 # Introduction
 A simple library for signing and verifying messages using common JWT algorithms without the overhead of a full JWT library or a lot of setup.
