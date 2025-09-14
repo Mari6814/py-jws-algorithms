@@ -599,3 +599,17 @@ def test_ssh_keygen_ecdsa(tmp_path: Path):
         signature = algo.sign(payload=payload, private_key=keyfile, password=password)
 
         assert algo.verify(payload=payload, public_key=pubfile, signature=signature)
+
+
+def test_asymmetric_algorithm_and_key_mismatch():
+    payload = b"test payload"
+    algo = AsymmetricAlgorithm.RS256
+    public_key, private_key = AsymmetricAlgorithm.ES256.generate_keypair()
+
+    with pytest.raises(ValueError):
+        algo.sign(payload, private_key)
+
+    signature = algo.sign(payload, AsymmetricAlgorithm.RS256.generate_keypair()[1])
+
+    with pytest.raises(ValueError):
+        algo.verify(payload, public_key, signature)
