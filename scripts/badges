@@ -1,5 +1,7 @@
 #!/bin/env bash
 
+set -euo pipefail
+
 # Versions badge with Python versions that we run tests against
 uv run --with pybadges --with setuptools -m pybadges --left-text Python --right-color blue --right-text '3.10 | 3.11 | 3.12 | 3.13 | 3.14'  > badges/python-versions.svg
 
