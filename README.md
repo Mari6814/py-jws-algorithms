@@ -51,8 +51,8 @@ assert AsymmetricAlgorithm.RS256.verify(message, public_key, signature)
 ```
 
 # Keys from files
-
 The private keys can also be loaded from files by passing a `pathlib.Path` object to the loading functions.
+**Important**: You have to install with all optional dependencies or specifically the `encryption` extra to use this feature, as it depends on the `bcrypt` package.
 
 ```python
 from pathlib import Path
