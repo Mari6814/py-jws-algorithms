@@ -116,6 +116,23 @@ assert AsymmetricAlgorithm.RS256.verify(
 )
 ```
 
+# Using this enum in your own code
+You can use the `SymmetricAlgorithm` and `AsymmetricAlgorithm` enums in your own code to select algorithms dynamically. For example, when your client has a signature, they can send the algorithm name along it and you can parse it using the enum:
+
+```python
+from jwt_algorithms import SymmetricAlgorithm, AsymmetricAlgorithm
+
+def index(request):
+    alg_name = request.headers.get("X-Signature-Algorithm")
+    algorithm = SymmetricAlgorithm[alg_name] if alg_name in SymmetricAlgorithm else AsymmetricAlgorithm[alg_name]
+    message = request.body
+    signature = request.headers.get("X-Signature")
+    key = get_key_somehow(alg_name)  # Load the key from a database
+    if not algorithm.verify(message, key, signature):
+        raise ValueError("Invalid signature")
+    # Process the request
+```
+
 # How to generate keys
 In case you don't have keys yet, here are some examples of how to generate them.
 
