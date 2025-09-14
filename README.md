@@ -1,0 +1,189 @@
+[![Test](https://github.com/Mari6814/py-jwt-algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/Mari6814/py-jwt-algorithms/actions/workflows/test.yml)
+[![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
+[![Versions](./badges/python-versions.svg)](./badges/python-versions.svg)
+
+# Introduction
+A simple library for signing and verifying messages using common JWT algorithms without the overhead of a full JWT library or a lot of setup.
+
+This library provides two enums:
+
+- **`SymmetricAlgorithm`**: for symmetric algorithms like HMAC, where the same secret is used for signing and verifying.
+- **`AsymmetricAlgorithm`**: for asymmetric algorithms like RSA and ECDSA, where a private key is used for signing and a public key is used for verification.
+
+Select the algorithm you want to use from the enum, then call its `sign` and `verify` methods, or if you still need a key `generate_secret` or `generate_keypair` depending on the algorithm.
+
+# Basic Usage
+
+Symmetric algorithms use shared *secrets* that are simple random byte strings:
+
+```python
+from jwt_algorithms import SymmetricAlgorithm
+
+# Our message we want to sign and verify using HMAC-SHA256
+message = b"Hello, World!"
+
+# Generate a new secret random bytes
+key = SymmetricAlgorithm.HS256.generate_secret()
+
+# Sign the message
+signature = SymmetricAlgorithm.HS256.sign(message, key)
+
+# Verify the signature
+assert SymmetricAlgorithm.HS256.verify(message, key, signature)
+```
+
+For more security, asymmetric algorithms use a *private key* to sign messages and a *public key* to verify signatures:
+
+```python
+from jwt_algorithms import AsymmetricAlgorithm
+
+# Our message we want to sign and verify using RSA-SHA256
+message = b"Hello, World!"
+
+# We need a public and private key pair
+public_key, private_key = AsymmetricAlgorithm.RS256.generate_keypair()
+
+# Sign the message with the private key
+signature = AsymmetricAlgorithm.RS256.sign(message, private_key)
+
+# Verify the signature with the public key
+assert AsymmetricAlgorithm.RS256.verify(message, public_key, signature)
+```
+
+# Keys from files
+
+The private keys can also be loaded from files by passing a `pathlib.Path` object to the loading functions.
+
+```python
+from pathlib import Path
+from jwt_algorithms import AsymmetricAlgorithm
+
+# The message to sign using RSA-SHA256
+message = b'Hello, World!'
+
+# Sign with a private key loaded from a file
+signature = AsymmetricAlgorithm.RS256.sign(
+    message,
+    Path('path/to/private_key.pem')
+)
+
+# Verify with a public key loaded from a file
+assert AsymmetricAlgorithm.RS256.verify(
+    message,
+    Path('path/to/public_key.pem'),
+    signature
+)
+```
+
+# From raw text or environment
+
+Keys can also be passed as raw text (often from environment variables) by calling the functions with a `str` or `bytes` instead of a `Path` or compiled representation of the `cryptography` package.
+
+```python
+import os
+from jwt_algorithms import AsymmetricAlgorithm
+
+# The message to sign using RSA-SHA256
+message = b'Hello, World!'
+
+# Sign with a private key loaded from an environment variable
+signature = AsymmetricAlgorithm.RS256.sign(message, os.environ['PRIVATE_KEY'])
+
+# Verify with a public key loaded from an environment variable
+assert AsymmetricAlgorithm.RS256.verify(message, os.environ['PUBLIC_KEY'], signature)
+```
+
+# Encrypted private keys
+
+When loading private keys, you can provide an optional password if the private key is encrypted.
+
+```python
+from pathlib import Path
+from jwt_algorithms import AsymmetricAlgorithm
+
+# Sign with an encrypted private key loaded from a file
+signature = AsymmetricAlgorithm.RS256.sign(
+    b'Hello, World!',
+    Path('path/to/encrypted_private_key.pem'),
+    password='my_secret_password'
+)
+
+# Public keys are not encrypted, so no password is needed here
+assert AsymmetricAlgorithm.RS256.verify(
+    b'Hello, World!',
+    Path('path/to/public_key.pem'),
+    signature
+)
+```
+
+# How to generate keys
+In case you don't have keys yet, here are some examples of how to generate them.
+
+## HMAC
+
+Symmetric HMAC-SHA is just some random bytes:
+
+```bash
+# Using openssl
+openssl rand -base64 32 > hmac_secret.key
+
+# Using python
+python -c "import os; print(os.urandom(32).hex())" > hmac_secret.key
+```
+
+## RSA
+
+Using openssl:
+
+```bash
+# Generate a 2048-bit RSA private key in PEM format
+openssl genpkey -algorithm RSA -out rsa_private.pem -pkeyopt rsa_keygen_bits:2048
+
+# Extract the public key from the private key
+openssl rsa -pubout -in rsa_private.pem -out rsa_public.pem
+```
+
+Using ssh-keygen:
+
+```bash
+# Generate a 2048-bit RSA private key in PEM format
+ssh-keygen -t rsa -b 2048 -m PEM -f rsa_private.pem
+
+# Extract the public key from the private key
+ssh-keygen -y -f rsa_private.pem > rsa_public.pem
+```
+
+## ECDSA
+
+Using openssl:
+
+```bash
+# Generate a private key for the P-256 curve in PEM format
+openssl ecparam -name prime256v1 -genkey -noout -out ecdsa_private.pem
+
+# Extract the public key from the private key
+openssl ec -in ecdsa_private.pem -pubout -out ecdsa_public.pem
+```
+
+Using ssh-keygen:
+
+```bash
+# Generate a private key for the P-256 curve in PEM format
+ssh-keygen -t ecdsa -b 256 -m PEM -f ecdsa_private.pem
+
+# Extract the public key from the private key
+ssh-keygen -y -f ecdsa_private.pem > ecdsa_public.pem
+```
+
+## EdDSA (Ed25519)
+
+Using ssh-keygen:
+
+```bash
+# Generate an Ed25519 private key in PEM format
+ssh-keygen -t ed25519 -m PEM -f ed25519_private.pem
+
+# Extract the public key from the private key
+ssh-keygen -y -f ed25519_private.pem > ed25519_public.pem
+```
+
