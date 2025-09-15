@@ -3,20 +3,22 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-only-include = ["jwt_algorithms", "LICENSE", "README.md", "pyproject.toml", "tests"]
+only-include = [
+    "jwt_algorithms",
+    "LICENSE",
+    "README.md",
+    "pyproject.toml",
+    "tests",
+]
 
 [project]
 name = "jwt-algorithms"
-version = "1.0.5"
+version = "1.0.6"
 description = "Implements the most common JWT algorithms to generate keys or sign and verify payloads without the requirement to first read a lot of documentation just to do the signing and verifying part."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "cryptography>=45.0.6",
-]
-authors = [
-    { name = "Marian Plivelic", email = "marianplivelic@gmail.com" }
-]
+dependencies = ["cryptography>=45.0.6"]
+authors = [{ name = "Marian Plivelic", email = "marianplivelic@gmail.com" }]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 keywords = [
@@ -48,16 +50,10 @@ Repository = "https://github.com/Mari6814/py-jwt-algorithms"
 Documentation = "https://github.com/Mari6814/py-jwt-algorithms"
 
 [project.optional-dependencies]
-encryption = [
-    "bcrypt>=4.3.0",
-]
+encryption = ["bcrypt>=4.3.0"]
 
 [dependency-groups]
-dev = [
-    "coverage>=7.10.6",
-    "pytest>=8.4.1",
-    "ruff>=0.12.12",
-]
+dev = ["coverage>=7.10.6", "pytest>=8.4.1", "ruff>=0.12.12"]
 
 [tool.ruff]
 exclude = ["build", "dist", ".venv", ".env", "__pycache__"]
