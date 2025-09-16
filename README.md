@@ -12,6 +12,13 @@ This library provides two enums:
 
 Select the algorithm you want to use from the enum, then call its `sign` and `verify` methods, or if you still need a key `generate_secret` or `generate_keypair` depending on the algorithm.
 
+# Installation
+You can install the package via pip:
+
+```bash
+pip install jwt-algorithms
+```
+
 # Basic Usage
 
 Symmetric algorithms use shared *secrets* that are simple random byte strings:
