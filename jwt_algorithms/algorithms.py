@@ -1,3 +1,5 @@
+"""Implement the `SymmetricAlgorithm` and `AsymmetricAlgorithm` enums with methods to generate keys/secrets, sign data, and verify signatures."""
+
 import hashlib
 import hmac
 import secrets
@@ -12,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, paddin
 
 @dataclass
 class _Secret:
+
     """A simple wrapper for secret bytes. This is to avoid confusion with keys. If this doesn't exist, you might accidentally pass a secret to the signature or payload parameter."""
 
     secret_bytes: bytes
@@ -25,6 +28,12 @@ class _Secret:
 
 
 class SymmetricAlgorithm(Enum):
+
+    """Lists the supported symmetric algorithms and provides methods to generate secrets, sign, and verify signatures.
+
+    The algorithms provided here are the most common ones used in the context for JWTs/JWSs (signatures).
+    """
+
     HS256 = "HMAC-SHA256"
     HS384 = "HMAC-SHA384"
     HS512 = "HMAC-SHA512"
@@ -37,6 +46,7 @@ class SymmetricAlgorithm(Enum):
 
         Returns:
             An instance of `_Secret` containing the generated secret bytes. Pass it to the `sign` and `verify` methods. It only wraps your bytes to avoid confusion with payloads or signatures. You can extract the bytes using the `secret_bytes` attribute if you need to store it or use it elsewhere.
+
         """
         match self:
             case SymmetricAlgorithm.HS256:
@@ -61,6 +71,7 @@ class SymmetricAlgorithm(Enum):
 
         Returns:
             The HMAC signature as bytes. You can encode it as base64 or hex for easier transport.
+
         """
         match self:
             case SymmetricAlgorithm.HS256:
@@ -98,6 +109,7 @@ class SymmetricAlgorithm(Enum):
 
         Returns:
             True if the signature is valid, False otherwise.
+
         """
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
@@ -115,6 +127,12 @@ class SymmetricAlgorithm(Enum):
 
 
 class AsymmetricAlgorithm(Enum):
+
+    """Lists the supported asymmetric algorithms and provides methods to generate key pairs, sign, and verify signatures.
+
+    The algorithms provided here are the most common ones used for JWTs/JWSs (signatures).
+    """
+
     RS256 = "RSA-SHA256"
     RS384 = "RSA-SHA384"
     RS512 = "RSA-SHA512"
@@ -130,20 +148,20 @@ class AsymmetricAlgorithm(Enum):
     EdDSA = "EdDSA"
 
     def generate_keypair(
-        self, password: bytes | str | None = None
+        self,
     ) -> (
         tuple[rsa.RSAPublicKey, rsa.RSAPrivateKey]
         | tuple[ec.EllipticCurvePublicKey, ec.EllipticCurvePrivateKey]
         | tuple[ed25519.Ed25519PublicKey, ed25519.Ed25519PrivateKey]
         | tuple[ed448.Ed448PublicKey, ed448.Ed448PrivateKey]
     ):
-        """Helper to generate a valid key pair for the algorithm.
+        """Generate a public/private key pair for the algorithm.
 
-        Args:
-            password: The password to encrypt the private key, if applicable. A `str` password will be treated as utf-8 bytes.
+        Encryption is not supported here. Please use external tools for that.
 
         Returns:
             A tuple of (public_key, private_key) suitable for the algorithm.
+
         """
         match self:
             case (
@@ -208,6 +226,11 @@ class AsymmetricAlgorithm(Enum):
 
         Returns:
             The signature as bytes. You can encode it as base64 or hex for easier transport.
+
+        Raises:
+            ValueError: If the algorithm or key type is unsupported.
+            TypeError: If the loaded key is not a supported type.
+
         """
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
@@ -249,7 +272,8 @@ class AsymmetricAlgorithm(Enum):
                     algorithm=self._get_hash_algorithm(),
                 )
             case AsymmetricAlgorithm.EdDSA if isinstance(
-                private_key, (ed25519.Ed25519PrivateKey | ed448.Ed448PrivateKey)
+                private_key,
+                (ed25519.Ed25519PrivateKey | ed448.Ed448PrivateKey),
             ):
                 return private_key.sign(payload)
         raise ValueError("Unsupported algorithm or key type.")
@@ -281,8 +305,8 @@ class AsymmetricAlgorithm(Enum):
 
         Returns:
             True if the signature is valid, False otherwise.
-        """
 
+        """
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
 
@@ -329,7 +353,8 @@ class AsymmetricAlgorithm(Enum):
                         algorithm=self._get_hash_algorithm(),
                     )
                 case AsymmetricAlgorithm.EdDSA if isinstance(
-                    public_key, (ed25519.Ed25519PublicKey | ed448.Ed448PublicKey)
+                    public_key,
+                    (ed25519.Ed25519PublicKey | ed448.Ed448PublicKey),
                 ):
                     public_key.verify(signature, payload)
                 case _:
@@ -339,7 +364,7 @@ class AsymmetricAlgorithm(Enum):
         return True
 
     def _get_hash_algorithm(self) -> hashes.HashAlgorithm:
-        """Internal method to quickly determine which hash algorithm to use."""
+        """Determine which hash algorithm to use for this algorithm."""
         match self:
             case (
                 AsymmetricAlgorithm.RS256
@@ -370,10 +395,18 @@ class AsymmetricAlgorithm(Enum):
         | ed25519.Ed25519PublicKey
         | ed448.Ed448PublicKey
     ):
-        """Loads a publickey from a file or in-memory bytes.
+        """Load a public key from a file or in-memory bytes.
 
         Args:
             public_key: The target has to be DER or PEM encoded. `Path` will load the bytes from disk. `bytes` and `str` is for in-memory keys. A `str` will be treated as utf-8 bytes.
+
+        Returns:
+            The loaded public key object.
+
+        Raises:
+            TypeError: If the loaded key is not a supported type.
+            ValueError: If the key could not be loaded.
+
         """
         if isinstance(public_key, Path):
             with public_key.open("rb") as key_file:
@@ -399,8 +432,8 @@ class AsymmetricAlgorithm(Enum):
                     ed448.Ed448PublicKey,
                 ),
             ):
-                raise ValueError(
-                    f"Invalid public key type: {type(pubkey)}. We only support RSA, EC, Ed25519, and Ed448 keys."
+                raise TypeError(
+                    f"Invalid public key type: {type(pubkey)}. We only support RSA, EC, Ed25519, and Ed448 keys.",
                 )
 
             return pubkey
@@ -409,7 +442,8 @@ class AsymmetricAlgorithm(Enum):
 
     @staticmethod
     def _load_pk(
-        private_key: bytes | Path | str, password: bytes | str | None = None
+        private_key: bytes | Path | str,
+        password: bytes | str | None = None,
     ) -> (
         rsa.RSAPrivateKey
         | ec.EllipticCurvePrivateKey
@@ -421,6 +455,14 @@ class AsymmetricAlgorithm(Enum):
         Args:
             private_key: The target has to be DER or PEM encoded. `bytes` and `str` are for in-memory keys. `Path` will load the bytes from disk. A `str` will be treated as utf-8 bytes.
             password: The password to decrypt the private key, if applicable. A `str` will be treated as utf-8 bytes.
+
+        Raises:
+            TypeError: If the loaded key is not a supported type.
+            ValueError: If the key could not be loaded.
+
+        Returns:
+            The loaded private key object.
+
         """
         if isinstance(password, str):
             password = password.encode("utf-8")
@@ -437,11 +479,13 @@ class AsymmetricAlgorithm(Enum):
             except ValueError:
                 try:
                     pk = serialization.load_der_private_key(
-                        private_key, password=password
+                        private_key,
+                        password=password,
                     )
                 except ValueError:
                     pk = serialization.load_ssh_private_key(
-                        private_key, password=password
+                        private_key,
+                        password=password,
                     )
 
             if not isinstance(
@@ -453,8 +497,8 @@ class AsymmetricAlgorithm(Enum):
                     ed448.Ed448PrivateKey,
                 ),
             ):
-                raise ValueError(
-                    f"Invalid private key type: {type(pk)}. We only support RSA, EC, Ed25519, and Ed448 keys."
+                raise TypeError(
+                    f"Invalid private key type: {type(pk)}. We only support RSA, EC, Ed25519, and Ed448 keys.",
                 )
 
             return pk

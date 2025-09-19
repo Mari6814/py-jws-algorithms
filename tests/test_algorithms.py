@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -428,7 +429,7 @@ def test_asymmetric_str_payload_str_private_bytes_public():
 
 def test_signing_and_verifying_encrypted_private_keys(tmp_path: Path):
     try:
-        import bcrypt  # noqa: F401 # type: ignore[import]
+        import bcrypt  # noqa: F401, PLC0415
     except ImportError:
         pytest.skip("bcrypt not installed, skipping encrypted key tests.")
     payload = b"test payload with encrypted RSA key"
@@ -466,11 +467,15 @@ def test_signing_and_verifying_encrypted_private_keys(tmp_path: Path):
             )
 
         signature_from_file = algo.sign(
-            payload, private_key=encrypted_private_key_path, password=password
+            payload,
+            private_key=encrypted_private_key_path,
+            password=password,
         )
 
         assert algo.verify(
-            payload, public_key=public_key, signature=signature_from_file
+            payload,
+            public_key=public_key,
+            signature=signature_from_file,
         )
 
 
@@ -478,11 +483,9 @@ def test_signing_and_verifying_encrypted_ssh_key(tmp_path: Path):
     if not shutil.which("ssh-keygen"):
         pytest.skip("ssh-keygen not found, skipping test.")
     try:
-        import bcrypt  # noqa: F401 # type: ignore[import]
+        import bcrypt  # noqa: F401, PLC0415
     except ImportError:
         pytest.skip("bcrypt not installed, skipping encrypted key tests.")
-
-    import subprocess
 
     payload = b"test payload with encrypted ssh-keygen key"
     password = "test_password_ssh"
@@ -508,7 +511,9 @@ def test_signing_and_verifying_encrypted_ssh_key(tmp_path: Path):
 
     with pytest.raises(ValueError):
         algo.sign(
-            payload=payload, private_key=keyfile, password="wrong_encryption_password"
+            payload=payload,
+            private_key=keyfile,
+            password="wrong_encryption_password",
         )
 
     signature = algo.sign(payload=payload, private_key=keyfile, password=password)
@@ -519,8 +524,6 @@ def test_signing_and_verifying_encrypted_ssh_key(tmp_path: Path):
 def test_ssh_keygen_rsa(tmp_path: Path):
     if not shutil.which("ssh-keygen"):
         pytest.skip("ssh-keygen not found, skipping test.")
-
-    import subprocess
 
     payload = b"test payload with encrypted ssh-keygen RSA key"
     keyfile = tmp_path / "id_rsa"
@@ -560,11 +563,9 @@ def test_ssh_keygen_rsa_with_password(tmp_path: Path):
     if not shutil.which("ssh-keygen"):
         pytest.skip("ssh-keygen not found, skipping test.")
     try:
-        import bcrypt  # noqa: F401 # type: ignore[import]
+        import bcrypt  # noqa: F401, PLC0415
     except ImportError:
         pytest.skip("bcrypt not installed, skipping encrypted key tests.")
-
-    import subprocess
 
     payload = b"test payload with encrypted ssh-keygen RSA key"
     password = "test_password_ssh_rsa"
@@ -612,8 +613,6 @@ def test_ssh_keygen_ecdsa(tmp_path: Path):
     if not shutil.which("ssh-keygen"):
         pytest.skip("ssh-keygen not found, skipping test.")
 
-    import subprocess
-
     payload = b"test payload with encrypted ssh-keygen ECDSA key"
     keyfile = tmp_path / "id_ecdsa"
     pubfile = tmp_path / "id_ecdsa.pub"
@@ -649,11 +648,9 @@ def test_ssh_keygen_encrypted_ecdsa(tmp_path: Path):
     if not shutil.which("ssh-keygen"):
         pytest.skip("ssh-keygen not found, skipping test.")
     try:
-        import bcrypt  # noqa: F401 # type: ignore[import]
+        import bcrypt  # noqa: F401, PLC0415
     except ImportError:
         pytest.skip("bcrypt not installed, skipping encrypted key tests.")
-
-    import subprocess
 
     payload = b"test payload with encrypted ssh-keygen ECDSA key"
     password = "test_password_ssh_ecdsa"

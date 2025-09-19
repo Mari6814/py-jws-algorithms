@@ -29,6 +29,7 @@ keywords = [
     "jwt algorithms",
     "jwt sign",
     "jwt verify",
+    "jws",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -59,6 +60,17 @@ dev = ["coverage>=7.10.6", "pytest>=8.4.1", "ruff>=0.12.12"]
 exclude = ["build", "dist", ".venv", ".env", "__pycache__"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "C90", "B", "B9", "S", "I"]
-ignore = ["E501"]
-per-file-ignores = { "tests/*" = ["S101", "S105", "S106", "S603", "S607"] }
+select = ["ALL"]
+ignore = ["D211", "D213", "E501", "EM101", "EM102", "TRY003"]
+per-file-ignores = { "tests/*" = [
+    "ANN201",
+    "D100",
+    "D103",
+    "INP001",
+    "PT011",
+    "S101",
+    "S105",
+    "S106",
+    "S603",
+    "S607",
+] }
