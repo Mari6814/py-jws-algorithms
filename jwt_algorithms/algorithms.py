@@ -14,7 +14,6 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, paddin
 
 @dataclass
 class _Secret:
-
     """A simple wrapper for secret bytes. This is to avoid confusion with keys. If this doesn't exist, you might accidentally pass a secret to the signature or payload parameter."""
 
     secret_bytes: bytes
@@ -28,7 +27,6 @@ class _Secret:
 
 
 class SymmetricAlgorithm(Enum):
-
     """Lists the supported symmetric algorithms and provides methods to generate secrets, sign, and verify signatures.
 
     The algorithms provided here are the most common ones used in the context for JWTs/JWSs (signatures).
@@ -127,7 +125,6 @@ class SymmetricAlgorithm(Enum):
 
 
 class AsymmetricAlgorithm(Enum):
-
     """Lists the supported asymmetric algorithms and provides methods to generate key pairs, sign, and verify signatures.
 
     The algorithms provided here are the most common ones used for JWTs/JWSs (signatures).

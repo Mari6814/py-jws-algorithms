@@ -61,7 +61,7 @@ exclude = ["build", "dist", ".venv", ".env", "__pycache__"]
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D211", "D213", "E501", "EM101", "EM102", "TRY003"]
+ignore = ["COM812", "D203", "D211", "D213", "E501", "EM101", "EM102", "TRY003"]
 per-file-ignores = { "tests/*" = [
     "ANN201",
     "D100",
