@@ -1,9 +1,10 @@
-[![Test](https://github.com/Mari6814/py-jwt-algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/Mari6814/py-jwt-algorithms/actions/workflows/test.yml)
-[![Coverage](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/coverage.svg)](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/coverage.svg)
-[![Versions](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/python-versions.svg)](https://github.com/Mari6814/py-jwt-algorithms/raw/main/badges/python-versions.svg)
+[![Test](https://github.com/Mari6814/py-jws-algorithms/actions/workflows/test.yml/badge.svg)](https://github.com/Mari6814/py-jws-algorithms/actions/workflows/test.yml)
+[![Coverage](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/coverage.svg)](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/coverage.svg)
+[![Versions](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/python-versions.svg)](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/python-versions.svg)
 
 # Introduction
-A simple library for signing and verifying messages using common JWT algorithms without the overhead of a full JWT library or a lot of setup.
+
+A simple library for signing and verifying messages using common JWS (JSON Web Signature) algorithms without the overhead of a full JWT/JWS library or a lot of setup and reading documentation when you do not need JWT/JWS.
 
 This library provides two enums:
 
@@ -13,18 +14,19 @@ This library provides two enums:
 Select the algorithm you want to use from the enum, then call its `sign` and `verify` methods, or if you still need a key `generate_secret` or `generate_keypair` depending on the algorithm.
 
 # Installation
+
 You can install the package via pip:
 
 ```bash
-pip install jwt-algorithms
+pip install jws-algorithms
 ```
 
 # Basic Usage
 
-Symmetric algorithms use shared *secrets* that are simple random byte strings:
+Symmetric algorithms use shared _secrets_ that are simple random byte strings:
 
 ```python
-from jwt_algorithms import SymmetricAlgorithm
+from jws_algorithms import SymmetricAlgorithm
 
 # Our message we want to sign and verify using HMAC-SHA256
 message = b"Hello, World!"
@@ -39,10 +41,10 @@ signature = SymmetricAlgorithm.HS256.sign(message, key)
 assert SymmetricAlgorithm.HS256.verify(message, key, signature)
 ```
 
-For more security, asymmetric algorithms use a *private key* to sign messages and a *public key* to verify signatures:
+For more security, asymmetric algorithms use a _private key_ to sign messages and a _public key_ to verify signatures:
 
 ```python
-from jwt_algorithms import AsymmetricAlgorithm
+from jws_algorithms import AsymmetricAlgorithm
 
 # Our message we want to sign and verify using RSA-SHA256
 message = b"Hello, World!"
@@ -58,11 +60,12 @@ assert AsymmetricAlgorithm.RS256.verify(message, public_key, signature)
 ```
 
 # Keys from files
+
 The private keys can also be loaded from files by passing a `pathlib.Path` object to the loading functions.
 
 ```python
 from pathlib import Path
-from jwt_algorithms import AsymmetricAlgorithm
+from jws_algorithms import AsymmetricAlgorithm
 
 # The message to sign using RSA-SHA256
 message = b'Hello, World!'
@@ -82,11 +85,12 @@ assert AsymmetricAlgorithm.RS256.verify(
 ```
 
 # From raw text or environment
+
 Keys can also be passed as raw text (often from environment variables) by calling the functions with a `str` or `bytes` instead of a `Path` or compiled representation of the `cryptography` package.
 
 ```python
 import os
-from jwt_algorithms import AsymmetricAlgorithm
+from jws_algorithms import AsymmetricAlgorithm
 
 # The message to sign using RSA-SHA256
 message = b'Hello, World!'
@@ -99,12 +103,13 @@ assert AsymmetricAlgorithm.RS256.verify(message, os.environ['PUBLIC_KEY'], signa
 ```
 
 # Encrypted private keys
+
 When loading private keys, you can provide an optional password if the private key is encrypted.
 **Important**: You have to install with all optional dependencies or specifically the `encryption` extra to use this feature, as it depends on the `bcrypt` package.
 
 ```python
 from pathlib import Path
-from jwt_algorithms import AsymmetricAlgorithm
+from jws_algorithms import AsymmetricAlgorithm
 
 # Sign with an encrypted private key loaded from a file
 signature = AsymmetricAlgorithm.RS256.sign(
@@ -122,10 +127,11 @@ assert AsymmetricAlgorithm.RS256.verify(
 ```
 
 # Using this enum in your own code
+
 You can use the `SymmetricAlgorithm` and `AsymmetricAlgorithm` enums in your own code to select algorithms dynamically. For example, when your client has a signature, they can send the algorithm name along it and you can parse it using the enum:
 
 ```python
-from jwt_algorithms import SymmetricAlgorithm, AsymmetricAlgorithm
+from jws_algorithms import SymmetricAlgorithm, AsymmetricAlgorithm
 
 def index(request):
     alg_name = request.headers.get("X-Signature-Algorithm")
@@ -139,6 +145,7 @@ def index(request):
 ```
 
 # How to generate keys
+
 In case you don't have keys yet, here are some examples of how to generate them.
 
 ## HMAC
@@ -208,4 +215,3 @@ ssh-keygen -t ed25519 -m PEM -f ed25519_private.pem
 # Extract the public key from the private key
 ssh-keygen -y -f ed25519_private.pem > ed25519_public.pem
 ```
-

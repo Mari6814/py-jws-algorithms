@@ -7,6 +7,6 @@ uv run --with pybadges --with setuptools -m pybadges --left-text Python --right-
 
 # Coverage badge
 uv sync --dev --all-extras
-coverage run --source jwt_algorithms --module pytest -v tests/
+coverage run --source jws_algorithms --module pytest -v tests/
 COVERAGE_PERCENT=$(uv run -m coverage json --pretty-print -o - | jq '.totals.percent_covered_display' | tr -d '"%')
 uv run --with pybadges --with setuptools -m pybadges --left-text Coverage --right-color green --right-text "${COVERAGE_PERCENT}%" > badges/coverage.svg

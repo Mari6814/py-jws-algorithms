@@ -280,7 +280,7 @@ wheels = [
 ]
 
 [[package]]
-name = "jwt-algorithms"
+name = "jws-algorithms"
 version = "1.0.7"
 source = { editable = "." }
 dependencies = [

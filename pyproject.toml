@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 only-include = [
-    "jwt_algorithms",
+    "jws_algorithms",
     "LICENSE",
     "README.md",
     "pyproject.toml",
@@ -12,7 +12,7 @@ only-include = [
 ]
 
 [project]
-name = "jwt-algorithms"
+name = "jws-algorithms"
 version = "1.0.7"
 description = "Implements the most common JWT algorithms to generate keys or sign and verify payloads without the requirement to first read a lot of documentation just to do the signing and verifying part."
 readme = "README.md"
@@ -22,14 +22,16 @@ authors = [{ name = "Marian Plivelic", email = "marianplivelic@gmail.com" }]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 keywords = [
+    "jws",
+    "json web signature",
+    "signature",
+    "signing",
+    "verify",
+    "jwt algorithms",
     "jwt",
     "json web token",
-    "json web signature",
-    "json web encryption",
-    "jwt algorithms",
-    "jwt sign",
-    "jwt verify",
-    "jws",
+    "jose algorithms",
+    "jose",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -46,8 +48,8 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://github.com/Mari6814/py-jwt-algorithms"
-Documentation = "https://github.com/Mari6814/py-jwt-algorithms"
+Repository = "https://github.com/Mari6814/py-jws-algorithms"
+Documentation = "https://github.com/Mari6814/py-jws-algorithms"
 
 [project.optional-dependencies]
 encryption = ["bcrypt>=4.3.0"]

@@ -6,7 +6,7 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed25519, rsa
 
-from jwt_algorithms.algorithms import AsymmetricAlgorithm, SymmetricAlgorithm
+from jws_algorithms.algorithms import AsymmetricAlgorithm, SymmetricAlgorithm
 
 
 def test_symmetric_sign_and_verify():

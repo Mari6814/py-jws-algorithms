@@ -29,7 +29,7 @@ class _Secret:
 class SymmetricAlgorithm(Enum):
     """Lists the supported symmetric algorithms and provides methods to generate secrets, sign, and verify signatures.
 
-    The algorithms provided here are the most common ones used in the context for JWTs/JWSs (signatures).
+    The algorithms provided here are the most common ones used in the context for JWTs/JWSs.
     """
 
     HS256 = "HMAC-SHA256"
@@ -127,7 +127,7 @@ class SymmetricAlgorithm(Enum):
 class AsymmetricAlgorithm(Enum):
     """Lists the supported asymmetric algorithms and provides methods to generate key pairs, sign, and verify signatures.
 
-    The algorithms provided here are the most common ones used for JWTs/JWSs (signatures).
+    The algorithms provided here are the most common ones used for JWTs/JWSs.
     """
 
     RS256 = "RSA-SHA256"
