@@ -206,6 +206,15 @@ ssh-keygen -y -f ecdsa_private.pem > ecdsa_public.pem
 
 ## EdDSA (Ed25519)
 
+Using openssl:
+
+```bash
+# Generate an Ed25519 private key in PEM format
+openssl genpkey -algorithm ED25519 -out ed25519_private.pem
+# Extract the public key from the private key
+openssl pkey -in ed25519_private.pem -pubout -out ed25519_public.pem
+```
+
 Using ssh-keygen:
 
 ```bash
