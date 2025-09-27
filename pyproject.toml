@@ -13,7 +13,7 @@ only-include = [
 
 [project]
 name = "jws-algorithms"
-version = "1.1.1"
+version = "1.2.1"
 description = "Implements the most common JWT algorithms to generate keys or sign and verify payloads without the requirement to first read a lot of documentation just to do the signing and verifying part."
 readme = "README.md"
 requires-python = ">=3.10"
