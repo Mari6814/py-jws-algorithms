@@ -35,10 +35,10 @@ message = b"Hello, World!"
 key = SymmetricAlgorithm.HS256.generate_secret()
 
 # Sign the message
-signature = SymmetricAlgorithm.HS256.sign(message, key)
+signature = SymmetricAlgorithm.HS256.sign(key, message)
 
 # Verify the signature
-assert SymmetricAlgorithm.HS256.verify(message, key, signature)
+assert SymmetricAlgorithm.HS256.verify(key, message, signature)
 ```
 
 For more security, asymmetric algorithms use a _private key_ to sign messages and a _public key_ to verify signatures:
@@ -53,10 +53,10 @@ message = b"Hello, World!"
 public_key, private_key = AsymmetricAlgorithm.RS256.generate_keypair()
 
 # Sign the message with the private key
-signature = AsymmetricAlgorithm.RS256.sign(message, private_key)
+signature = AsymmetricAlgorithm.RS256.sign(private_key, message)
 
 # Verify the signature with the public key
-assert AsymmetricAlgorithm.RS256.verify(message, public_key, signature)
+assert AsymmetricAlgorithm.RS256.verify(public_key, message, signature)
 ```
 
 # Keys from files
@@ -72,14 +72,14 @@ message = b'Hello, World!'
 
 # Sign with a private key loaded from a file
 signature = AsymmetricAlgorithm.RS256.sign(
-    message,
-    Path('path/to/private_key.pem')
+    Path('path/to/private_key.pem'),
+    message
 )
 
 # Verify with a public key loaded from a file
 assert AsymmetricAlgorithm.RS256.verify(
-    message,
     Path('path/to/public_key.pem'),
+    message,
     signature
 )
 ```
@@ -96,10 +96,10 @@ from jws_algorithms import AsymmetricAlgorithm
 message = b'Hello, World!'
 
 # Sign with a private key loaded from an environment variable
-signature = AsymmetricAlgorithm.RS256.sign(message, os.environ['PRIVATE_KEY'])
+signature = AsymmetricAlgorithm.RS256.sign(os.environ['PRIVATE_KEY'], message)
 
 # Verify with a public key loaded from an environment variable
-assert AsymmetricAlgorithm.RS256.verify(message, os.environ['PUBLIC_KEY'], signature)
+assert AsymmetricAlgorithm.RS256.verify(os.environ['PUBLIC_KEY'], message, signature)
 ```
 
 # Encrypted private keys
@@ -113,15 +113,15 @@ from jws_algorithms import AsymmetricAlgorithm
 
 # Sign with an encrypted private key loaded from a file
 signature = AsymmetricAlgorithm.RS256.sign(
-    b'Hello, World!',
     Path('path/to/encrypted_private_key.pem'),
+    b'Hello, World!',
     password='my_secret_password'
 )
 
 # Public keys are not encrypted, so no password is needed here
 assert AsymmetricAlgorithm.RS256.verify(
-    b'Hello, World!',
     Path('path/to/public_key.pem'),
+    b'Hello, World!',
     signature
 )
 ```
@@ -139,7 +139,7 @@ def index(request):
     message = request.body
     signature = request.headers.get("X-Signature")
     key = get_key_somehow(alg_name)  # Load the key from a database
-    if not algorithm.verify(message, key, signature):
+    if not algorithm.verify(key, message, signature):
         raise ValueError("Invalid signature")
     # Process the request
 ```

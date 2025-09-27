@@ -43,7 +43,7 @@ class SymmetricAlgorithm(Enum):
             num_bytes: The number of bytes to generate. If not provided, a sensible default will be used based on the algorithm. For HS256, the default is 32 bytes (256 bits). For HS384, it's 48 bytes (384 bits). For HS512, it's 64 bytes (512 bits).
 
         Returns:
-            An instance of `_Secret` containing the generated secret bytes. Pass it to the `sign` and `verify` methods. It only wraps your bytes to avoid confusion with payloads or signatures. You can extract the bytes using the `secret_bytes` attribute if you need to store it or use it elsewhere.
+            An instance of `_Secret` containing the generated secret bytes. Pass it as the first argument to the `sign` and `verify` methods. It only wraps your bytes to avoid confusion with payloads or signatures. You can extract the bytes using the `secret_bytes` attribute if you need to store it or use it elsewhere.
 
         """
         match self:
@@ -58,14 +58,14 @@ class SymmetricAlgorithm(Enum):
 
     def sign(
         self,
-        payload: bytes | str,
         secret: _Secret | bytes | Path | str,
+        payload: bytes | str,
     ) -> bytes:
         """Sign payload using HMAC with the algorithm's hash function.
 
         Args:
-            payload: The data to sign. A `str` payload will be treated as utf-8 encoded bytes.
             secret: The secret used to sign the payload. Can be a path to a file or be bytes with the secret. A `str` will be treated as utf-8 bytes. The `_Secret` is generated using the `generate_secret` method to wrap your bytes and is only there to avoid confusion with payloads or signatures.
+            payload: The data to sign. A `str` payload will be treated as utf-8 encoded bytes.
 
         Returns:
             The HMAC signature as bytes. You can encode it as base64 or hex for easier transport.
@@ -94,15 +94,15 @@ class SymmetricAlgorithm(Enum):
 
     def verify(
         self,
-        payload: bytes | str,
         secret: _Secret | bytes | Path | str,
+        payload: bytes | str,
         signature: bytes,
     ) -> bool:
         """Verify HMAC signature of payload using the algorithm's hash function.
 
         Args:
-            payload: The data that was signed. A `str` payload will be treated as utf-8 encoded bytes.
             secret: The secret used to verify the signature. Can be a path to a file or be bytes with the secret. A `str` will be treated as utf-8 bytes. The `_Secret` is generated using the `generate_secret` method to wrap your bytes and is only there to avoid confusion with payloads or signatures.
+            payload: The data that was signed. A `str` payload will be treated as utf-8 encoded bytes.
             signature: The signature to verify
 
         Returns:
@@ -120,7 +120,7 @@ class SymmetricAlgorithm(Enum):
         elif isinstance(secret, _Secret):
             secret = secret.secret_bytes
 
-        expected_signature = self.sign(payload, secret)
+        expected_signature = self.sign(secret, payload)
         return hmac.compare_digest(expected_signature, signature)
 
 
@@ -202,7 +202,6 @@ class AsymmetricAlgorithm(Enum):
 
     def sign(
         self,
-        payload: bytes | str,
         private_key: (
             rsa.RSAPrivateKey
             | ec.EllipticCurvePrivateKey
@@ -212,13 +211,14 @@ class AsymmetricAlgorithm(Enum):
             | str
             | bytes
         ),
+        payload: bytes | str,
         password: bytes | str | None = None,
     ) -> bytes:
         """Sign payload using the asymmetric algorithm with the provided private key.
 
         Args:
-            payload: The data to sign. A `str` payload will be treated as utf-8 encoded bytes.
             private_key: The private key used to sign the payload. Can be a path to PEM or DER encoded file or be bytes with a PEM or DER encoded private key. A `str` will be treated as utf-8 bytes.
+            payload: The data to sign. A `str` payload will be treated as utf-8 encoded bytes.
             password: The password to decrypt the private key, if applicable. A `str` password will be treated as utf-8 bytes.
 
         Returns:
@@ -277,7 +277,6 @@ class AsymmetricAlgorithm(Enum):
 
     def verify(
         self,
-        payload: bytes | str,
         public_key: (
             rsa.RSAPublicKey
             | ec.EllipticCurvePublicKey
@@ -287,6 +286,7 @@ class AsymmetricAlgorithm(Enum):
             | str
             | bytes
         ),
+        payload: bytes | str,
         signature: bytes,
         force_padding: padding.AsymmetricPadding | None = None,
         force_algorithm: ec.EllipticCurveSignatureAlgorithm | None = None,
@@ -294,8 +294,8 @@ class AsymmetricAlgorithm(Enum):
         """Verify signature of payload using the asymmetric algorithm with the provided public key.
 
         Args:
-            payload: The data that was signed. A `str` payload will be treated as utf-8 encoded bytes.
             public_key: The public key used to verify the signature. Can be a path to PEM or DER encoded file or be in-memory bytes with a PEM or DER encoded public key. A `str` will be treated as utf-8 bytes.
+            payload: The data that was signed. A `str` payload will be treated as utf-8 encoded bytes.
             signature: The signature to verify.
             force_padding: You can ignore this if you don't know what this is. Optional padding to use for verification when the algorithm requires it. Uses PKCS1v15 for RSA and PSS for RSASSA-PSS if not specified.
             force_algorithm: You can ignore this if you don't know what this is. Optional signature algorithm to use for verification when using ECDSA. Uses ECDSA if not specified.

@@ -14,17 +14,17 @@ def test_symmetric_sign_and_verify():
 
     for algo in SymmetricAlgorithm:
         secret = algo.generate_secret()
-        signature = algo.sign(payload, secret)
-        assert algo.verify(payload, secret, signature)
+        signature = algo.sign(secret, payload)
+        assert algo.verify(secret, payload, signature)
 
         # Test with an invalid signature
-        assert not algo.verify(payload, secret, b"invalid_signature")
+        assert not algo.verify(secret, payload, b"invalid_signature")
 
         # Test with a modified payload
-        assert not algo.verify(b"modified_payload", secret, signature)
+        assert not algo.verify(secret, b"modified_payload", signature)
 
         # Test with a different key
-        assert not algo.verify(payload, b"different_key", signature)
+        assert not algo.verify(b"different_key", payload, signature)
 
 
 def test_rsa_sign_and_verify():
@@ -38,14 +38,14 @@ def test_rsa_sign_and_verify():
         public_key, private_key = algo.generate_keypair()
         assert isinstance(private_key, rsa.RSAPrivateKey)
         assert isinstance(public_key, rsa.RSAPublicKey)
-        signature = algo.sign(payload, private_key)
-        assert algo.verify(payload, public_key, signature)
+        signature = algo.sign(private_key, payload)
+        assert algo.verify(public_key, payload, signature)
 
         # Test with an invalid signature
-        assert not algo.verify(payload, public_key, b"invalid_signature")
+        assert not algo.verify(public_key, payload, b"invalid_signature")
 
         # Test with a modified payload
-        assert not algo.verify(b"modified_payload", public_key, signature)
+        assert not algo.verify(public_key, b"modified_payload", signature)
 
 
 def test_ecdsa_sign_and_verify():
@@ -59,14 +59,14 @@ def test_ecdsa_sign_and_verify():
         public_key, private_key = algo.generate_keypair()
         assert isinstance(private_key, ec.EllipticCurvePrivateKey)
         assert isinstance(public_key, ec.EllipticCurvePublicKey)
-        signature = algo.sign(payload, private_key)
-        assert algo.verify(payload, public_key, signature)
+        signature = algo.sign(private_key, payload)
+        assert algo.verify(public_key, payload, signature)
 
         # Test with an invalid signature
-        assert not algo.verify(payload, public_key, b"invalid_signature")
+        assert not algo.verify(public_key, payload, b"invalid_signature")
 
         # Test with a modified payload
-        assert not algo.verify(b"modified_payload", public_key, signature)
+        assert not algo.verify(public_key, b"modified_payload", signature)
 
 
 def test_psign_and_verify():
@@ -80,14 +80,14 @@ def test_psign_and_verify():
         public_key, private_key = algo.generate_keypair()
         assert isinstance(private_key, rsa.RSAPrivateKey)
         assert isinstance(public_key, rsa.RSAPublicKey)
-        signature = algo.sign(payload, private_key)
-        assert algo.verify(payload, public_key, signature)
+        signature = algo.sign(private_key, payload)
+        assert algo.verify(public_key, payload, signature)
 
         # Test with an invalid signature
-        assert not algo.verify(payload, public_key, b"invalid_signature")
+        assert not algo.verify(public_key, payload, b"invalid_signature")
 
         # Test with a modified payload
-        assert not algo.verify(b"modified_payload", public_key, signature)
+        assert not algo.verify(public_key, b"modified_payload", signature)
 
 
 def test_ed25519_sign_and_verify():
@@ -97,14 +97,14 @@ def test_ed25519_sign_and_verify():
     public_key, private_key = algo.generate_keypair()
     assert isinstance(private_key, ed25519.Ed25519PrivateKey)
     assert isinstance(public_key, ed25519.Ed25519PublicKey)
-    signature = algo.sign(payload, private_key)
-    assert algo.verify(payload, public_key, signature)
+    signature = algo.sign(private_key, payload)
+    assert algo.verify(public_key, payload, signature)
 
     # Test with an invalid signature
-    assert not algo.verify(payload, public_key, b"invalid_signature")
+    assert not algo.verify(public_key, payload, b"invalid_signature")
 
     # Test with a modified payload
-    assert not algo.verify(b"modified_payload", public_key, signature)
+    assert not algo.verify(public_key, b"modified_payload", signature)
 
 
 # Symmetric algorithm tests for all combinations
@@ -112,16 +112,16 @@ def test_symmetric_bytes_payload_bytes_secret():
     payload = b"test payload"
     for algo in SymmetricAlgorithm:
         secret = algo.generate_secret()
-        signature = algo.sign(payload, secret)
-        assert algo.verify(payload, secret, signature)
+        signature = algo.sign(secret, payload)
+        assert algo.verify(secret, payload, signature)
 
 
 def test_symmetric_bytes_payload_str_secret():
     payload = b"test payload"
     for algo in SymmetricAlgorithm:
         secret = algo.generate_secret()
-        signature = algo.sign(payload, secret)
-        assert algo.verify(payload, secret, signature)
+        signature = algo.sign(secret, payload)
+        assert algo.verify(secret, payload, signature)
 
 
 def test_symmetric_bytes_payload_path_secret(tmp_path: Path):
@@ -131,24 +131,24 @@ def test_symmetric_bytes_payload_path_secret(tmp_path: Path):
         secret_path = tmp_path / f"secret_{algo.name}.key"
 
         secret_path.write_bytes(secret_bytes.secret_bytes)
-        signature = algo.sign(payload, secret_path)
-        assert algo.verify(payload, secret_path, signature)
+        signature = algo.sign(secret_path, payload)
+        assert algo.verify(secret_path, payload, signature)
 
 
 def test_symmetric_str_payload_bytes_secret():
     payload = "test payload"
     for algo in SymmetricAlgorithm:
         secret = algo.generate_secret()
-        signature = algo.sign(payload, secret)
-        assert algo.verify(payload, secret, signature)
+        signature = algo.sign(secret, payload)
+        assert algo.verify(secret, payload, signature)
 
 
 def test_symmetric_str_payload_str_secret():
     payload = "test payload"
     for algo in SymmetricAlgorithm:
         secret = algo.generate_secret()
-        signature = algo.sign(payload, secret)
-        assert algo.verify(payload, secret, signature)
+        signature = algo.sign(secret, payload)
+        assert algo.verify(secret, payload, signature)
 
 
 def test_symmetric_str_payload_path_secret(tmp_path: Path):
@@ -158,8 +158,8 @@ def test_symmetric_str_payload_path_secret(tmp_path: Path):
         secret_path = tmp_path / f"secret_{algo.name}.key"
 
         secret_path.write_bytes(secret_bytes.secret_bytes)
-        signature = algo.sign(payload, secret_path)
-        assert algo.verify(payload, secret_path, signature)
+        signature = algo.sign(secret_path, payload)
+        assert algo.verify(secret_path, payload, signature)
 
 
 # Asymmetric algorithm tests for all combinations
@@ -179,8 +179,8 @@ def test_asymmetric_bytes_payload_bytes_keys():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
-        signature = algo.sign(payload, private_bytes)
-        assert algo.verify(payload, public_bytes, signature)
+        signature = algo.sign(private_bytes, payload)
+        assert algo.verify(public_bytes, payload, signature)
 
 
 def test_asymmetric_bytes_payload_str_keys():
@@ -199,8 +199,8 @@ def test_asymmetric_bytes_payload_str_keys():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode("utf-8")
 
-        signature = algo.sign(payload, private_str)
-        assert algo.verify(payload, public_str, signature)
+        signature = algo.sign(private_str, payload)
+        assert algo.verify(public_str, payload, signature)
 
 
 def test_asymmetric_bytes_payload_path_keys(tmp_path: Path):
@@ -225,8 +225,8 @@ def test_asymmetric_bytes_payload_path_keys(tmp_path: Path):
         private_path.write_bytes(private_bytes)
         public_path.write_bytes(public_bytes)
 
-        signature = algo.sign(payload, private_path)
-        assert algo.verify(payload, public_path, signature)
+        signature = algo.sign(private_path, payload)
+        assert algo.verify(public_path, payload, signature)
 
 
 def test_asymmetric_str_payload_bytes_keys():
@@ -245,8 +245,8 @@ def test_asymmetric_str_payload_bytes_keys():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
-        signature = algo.sign(payload, private_bytes)
-        assert algo.verify(payload, public_bytes, signature)
+        signature = algo.sign(private_bytes, payload=payload)
+        assert algo.verify(public_bytes, payload=payload, signature=signature)
 
 
 def test_asymmetric_str_payload_str_keys():
@@ -265,8 +265,8 @@ def test_asymmetric_str_payload_str_keys():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode("utf-8")
 
-        signature = algo.sign(payload, private_str)
-        assert algo.verify(payload, public_str, signature)
+        signature = algo.sign(private_str, payload=payload)
+        assert algo.verify(public_str, payload=payload, signature=signature)
 
 
 def test_asymmetric_str_payload_path_keys(tmp_path: Path):
@@ -291,8 +291,8 @@ def test_asymmetric_str_payload_path_keys(tmp_path: Path):
         private_path.write_bytes(private_bytes)
         public_path.write_bytes(public_bytes)
 
-        signature = algo.sign(payload, private_path)
-        assert algo.verify(payload, public_path, signature)
+        signature = algo.sign(private_path, payload)
+        assert algo.verify(public_path, payload, signature)
 
 
 # Additional combination tests for asymmetric - mixed key types
@@ -311,8 +311,8 @@ def test_asymmetric_bytes_payload_bytes_private_str_public():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ).decode("utf-8")
 
-        signature = algo.sign(payload, private_bytes)
-        assert algo.verify(payload, public_str, signature)
+        signature = algo.sign(private_bytes, payload)
+        assert algo.verify(public_str, payload, signature)
 
 
 def test_asymmetric_bytes_payload_str_private_path_public(tmp_path: Path):
@@ -334,8 +334,8 @@ def test_asymmetric_bytes_payload_str_private_path_public(tmp_path: Path):
 
         public_path.write_bytes(public_bytes)
 
-        signature = algo.sign(payload, private_str)
-        assert algo.verify(payload, public_path, signature)
+        signature = algo.sign(private_str, payload)
+        assert algo.verify(public_path, payload, signature)
 
 
 def test_asymmetric_bytes_payload_path_private_bytes_public(tmp_path: Path):
@@ -357,8 +357,8 @@ def test_asymmetric_bytes_payload_path_private_bytes_public(tmp_path: Path):
 
         private_path.write_bytes(private_bytes)
 
-        signature = algo.sign(payload, private_path)
-        assert algo.verify(payload, public_bytes, signature)
+        signature = algo.sign(private_path, payload)
+        assert algo.verify(public_bytes, payload, signature)
 
 
 def test_asymmetric_str_payload_bytes_private_path_public(tmp_path: Path):
@@ -380,8 +380,8 @@ def test_asymmetric_str_payload_bytes_private_path_public(tmp_path: Path):
 
         public_path.write_bytes(public_bytes)
 
-        signature = algo.sign(payload, private_bytes)
-        assert algo.verify(payload, public_path, signature)
+        signature = algo.sign(private_bytes, payload)
+        assert algo.verify(public_path, payload, signature)
 
 
 def test_asymmetric_str_payload_path_private_str_public(tmp_path: Path):
@@ -403,8 +403,8 @@ def test_asymmetric_str_payload_path_private_str_public(tmp_path: Path):
 
         private_path.write_bytes(private_bytes)
 
-        signature = algo.sign(payload, private_path)
-        assert algo.verify(payload, public_str, signature)
+        signature = algo.sign(private_path, payload)
+        assert algo.verify(public_str, payload, signature)
 
 
 def test_asymmetric_str_payload_str_private_bytes_public():
@@ -423,8 +423,8 @@ def test_asymmetric_str_payload_str_private_bytes_public():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
-        signature = algo.sign(payload, private_str)
-        assert algo.verify(payload, public_bytes, signature)
+        signature = algo.sign(private_str, payload)
+        assert algo.verify(public_bytes, payload, signature)
 
 
 def test_signing_and_verifying_encrypted_private_keys(tmp_path: Path):
@@ -449,11 +449,13 @@ def test_signing_and_verifying_encrypted_private_keys(tmp_path: Path):
         )
 
         with pytest.raises(ValueError):
-            algo.sign(payload, encrypted_private_bytes, password=b"wrong_password")
+            algo.sign(encrypted_private_bytes, payload, password=b"wrong_password")
 
-        signature = algo.sign(payload, encrypted_private_bytes, password=password)
+        signature = algo.sign(
+            private_key=encrypted_private_bytes, payload=payload, password=password
+        )
 
-        assert algo.verify(payload, public_key=public_key, signature=signature)
+        assert algo.verify(public_key=public_key, payload=payload, signature=signature)
 
         # Write the encrypted private key to a file
         encrypted_private_key_path = tmp_path / f"private_{algo.name}.pem"
@@ -461,20 +463,20 @@ def test_signing_and_verifying_encrypted_private_keys(tmp_path: Path):
 
         with pytest.raises(ValueError):
             algo.sign(
-                payload,
-                private_key=encrypted_private_key_path,
+                encrypted_private_key_path,
+                payload=payload,
                 password=b"wrong_password",
             )
 
         signature_from_file = algo.sign(
-            payload,
-            private_key=encrypted_private_key_path,
+            encrypted_private_key_path,
+            payload=payload,
             password=password,
         )
 
         assert algo.verify(
-            payload,
-            public_key=public_key,
+            public_key,
+            payload=payload,
             signature=signature_from_file,
         )
 
@@ -511,14 +513,14 @@ def test_signing_and_verifying_encrypted_ssh_key(tmp_path: Path):
 
     with pytest.raises(ValueError):
         algo.sign(
-            payload=payload,
             private_key=keyfile,
+            payload=payload,
             password="wrong_encryption_password",
         )
 
-    signature = algo.sign(payload=payload, private_key=keyfile, password=password)
+    signature = algo.sign(private_key=keyfile, payload=payload, password=password)
 
-    assert algo.verify(payload=payload, public_key=pubfile, signature=signature)
+    assert algo.verify(public_key=pubfile, payload=payload, signature=signature)
 
 
 def test_ssh_keygen_rsa(tmp_path: Path):
@@ -554,9 +556,9 @@ def test_ssh_keygen_rsa(tmp_path: Path):
         AsymmetricAlgorithm.PS384,
         AsymmetricAlgorithm.PS512,
     ]:
-        signature = algo.sign(payload=payload, private_key=keyfile)
+        signature = algo.sign(private_key=keyfile, payload=payload)
 
-        assert algo.verify(payload=payload, public_key=pubfile, signature=signature)
+        assert algo.verify(public_key=pubfile, payload=payload, signature=signature)
 
 
 def test_ssh_keygen_rsa_with_password(tmp_path: Path):
@@ -604,9 +606,9 @@ def test_ssh_keygen_rsa_with_password(tmp_path: Path):
                 password="wrong_encryption_password",
             )
 
-        signature = algo.sign(payload=payload, private_key=keyfile, password=password)
+        signature = algo.sign(private_key=keyfile, payload=payload, password=password)
 
-        assert algo.verify(payload=payload, public_key=pubfile, signature=signature)
+        assert algo.verify(public_key=pubfile, payload=payload, signature=signature)
 
 
 def test_ssh_keygen_ecdsa(tmp_path: Path):
@@ -639,9 +641,9 @@ def test_ssh_keygen_ecdsa(tmp_path: Path):
         AsymmetricAlgorithm.ES384,
         AsymmetricAlgorithm.ES512,
     ]:
-        signature = algo.sign(payload=payload, private_key=keyfile)
+        signature = algo.sign(private_key=keyfile, payload=payload)
 
-        assert algo.verify(payload=payload, public_key=pubfile, signature=signature)
+        assert algo.verify(public_key=pubfile, payload=payload, signature=signature)
 
 
 def test_ssh_keygen_encrypted_ecdsa(tmp_path: Path):
@@ -681,14 +683,14 @@ def test_ssh_keygen_encrypted_ecdsa(tmp_path: Path):
     ]:
         with pytest.raises(ValueError):
             algo.sign(
-                payload=payload,
                 private_key=keyfile,
+                payload=payload,
                 password="wrong_encryption_password",
             )
 
-        signature = algo.sign(payload=payload, private_key=keyfile, password=password)
+        signature = algo.sign(private_key=keyfile, payload=payload, password=password)
 
-        assert algo.verify(payload=payload, public_key=pubfile, signature=signature)
+        assert algo.verify(public_key=pubfile, payload=payload, signature=signature)
 
 
 def test_asymmetric_algorithm_and_key_mismatch():
@@ -697,9 +699,11 @@ def test_asymmetric_algorithm_and_key_mismatch():
     public_key, private_key = AsymmetricAlgorithm.ES256.generate_keypair()
 
     with pytest.raises(ValueError):
-        algo.sign(payload, private_key)
+        algo.sign(private_key=private_key, payload=payload)
 
-    signature = algo.sign(payload, AsymmetricAlgorithm.RS256.generate_keypair()[1])
+    signature = algo.sign(
+        private_key=AsymmetricAlgorithm.RS256.generate_keypair()[1], payload=payload
+    )
 
     with pytest.raises(ValueError):
-        algo.verify(payload, public_key, signature)
+        algo.verify(public_key=public_key, payload=payload, signature=signature)
