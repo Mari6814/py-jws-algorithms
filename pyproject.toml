@@ -47,6 +47,11 @@ classifiers = [
     "Topic :: Security :: Cryptography",
 ]
 
+[project.scripts]
+jws-gen-keys = "jws_algorithms.cli:generate_keys"
+jws-sign = "jws_algorithms.cli:sign"
+jws-verify = "jws_algorithms.cli:verify"
+
 [project.urls]
 Repository = "https://github.com/Mari6814/py-jws-algorithms"
 Documentation = "https://github.com/Mari6814/py-jws-algorithms"
