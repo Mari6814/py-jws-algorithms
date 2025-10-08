@@ -3,17 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-only-include = [
-    "jws_algorithms",
-    "LICENSE",
-    "README.md",
-    "pyproject.toml",
-    "tests",
-]
+packages = [ 'jws_algorithms' ]
 
 [project]
 name = "jws-algorithms"
-version = "1.2.1"
+version = "1.2.2"
 description = "Implements the most common JWT algorithms to generate keys or sign and verify payloads without the requirement to first read a lot of documentation just to do the signing and verifying part."
 readme = "README.md"
 requires-python = ">=3.10"
