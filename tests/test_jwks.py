@@ -50,6 +50,7 @@ def test_ecdsa_jwk_from_public_key():
         public_key, _private_key = algo.generate_keypair()
         jwk = algo.to_jwk(public_key)
 
+        assert "crv" in jwk
         assert jwk["kty"] == "EC"
         assert jwk["crv"] == expected_crv
         assert jwk["alg"] == algo.name
@@ -65,6 +66,7 @@ def test_eddsa_jwk_from_public_key():
     public_key, _private_key = algo.generate_keypair()
     jwk = algo.to_jwk(public_key)
 
+    assert "crv" in jwk
     assert jwk["kty"] == "OKP"
     assert jwk["crv"] == "Ed25519"
     assert jwk["alg"] == "EdDSA"
@@ -221,6 +223,10 @@ def test_include_private_with_public_key_has_no_private_fields():
 
         assert "d" not in jwk
         assert "p" not in jwk
+        assert "q" not in jwk
+        assert "dp" not in jwk
+        assert "dq" not in jwk
+        assert "qi" not in jwk
 
 
 def test_rsa_include_private():
@@ -250,7 +256,7 @@ def test_rsa_include_private():
         # Public-only JWK should be a subset
         jwk_public = algo.to_jwk(public_key)
         for k in ("kty", "n", "e", "alg", "use"):
-            assert jwk[k] == jwk_public[k]
+            assert jwk[k] == jwk_public.get(k)
 
 
 def test_ecdsa_include_private():
@@ -264,6 +270,7 @@ def test_ecdsa_include_private():
         jwk = algo.to_jwk(private_key, include_private=True)
 
         assert jwk["kty"] == "EC"
+        assert "crv" in jwk
         assert "x" in jwk
         assert "y" in jwk
         assert "d" in jwk
@@ -271,7 +278,7 @@ def test_ecdsa_include_private():
         # Public-only fields should match
         jwk_public = algo.to_jwk(public_key)
         for k in ("kty", "crv", "x", "y", "alg", "use"):
-            assert jwk[k] == jwk_public[k]
+            assert jwk[k] == jwk_public.get(k)
 
 
 def test_eddsa_include_private():
@@ -281,6 +288,7 @@ def test_eddsa_include_private():
     jwk = algo.to_jwk(private_key, include_private=True)
 
     assert jwk["kty"] == "OKP"
+    assert "crv" in jwk
     assert jwk["crv"] == "Ed25519"
     assert "x" in jwk
     assert "d" in jwk
@@ -288,7 +296,7 @@ def test_eddsa_include_private():
     # Public-only fields should match
     jwk_public = algo.to_jwk(public_key)
     for k in ("kty", "crv", "x", "alg", "use"):
-        assert jwk[k] == jwk_public[k]
+        assert jwk[k] == jwk_public.get(k)
 
 
 def test_include_private_from_pem_bytes():
