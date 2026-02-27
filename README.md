@@ -2,7 +2,7 @@
 [![Coverage](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/coverage.svg)](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/coverage.svg)
 [![Versions](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/python-versions.svg)](https://github.com/Mari6814/py-jws-algorithms/raw/main/badges/python-versions.svg)
 
-# Introduction
+# JWS Algorithms
 
 A simple library for signing and verifying messages using common JWS (JSON Web Signature) algorithms without the overhead of a full JWT/JWS library or a lot of setup and reading documentation when you do not need JWT/JWS.
 
@@ -13,7 +13,7 @@ This library provides two enums:
 
 Select the algorithm you want to use from the enum, then call its `sign` and `verify` methods, or if you still need a key `generate_secret` or `generate_keypair` depending on the algorithm.
 
-# Installation
+## Installation
 
 You can install the package via pip:
 
@@ -21,7 +21,7 @@ You can install the package via pip:
 pip install jws-algorithms
 ```
 
-# Basic Usage
+## Basic Usage
 
 Symmetric algorithms use shared _secrets_ that are simple random byte strings:
 
@@ -59,7 +59,7 @@ signature = AsymmetricAlgorithm.RS256.sign(private_key, message)
 assert AsymmetricAlgorithm.RS256.verify(public_key, message, signature)
 ```
 
-# Keys from files
+## Keys from files
 
 The private keys can also be loaded from files by passing a `pathlib.Path` object to the loading functions.
 
@@ -84,7 +84,7 @@ assert AsymmetricAlgorithm.RS256.verify(
 )
 ```
 
-# From raw text or environment
+## From raw text or environment
 
 Keys can also be passed as raw text (often from environment variables) by calling the functions with a `str` or `bytes` instead of a `Path` or compiled representation of the `cryptography` package.
 
@@ -102,7 +102,7 @@ signature = AsymmetricAlgorithm.RS256.sign(os.environ['PRIVATE_KEY'], message)
 assert AsymmetricAlgorithm.RS256.verify(os.environ['PUBLIC_KEY'], message, signature)
 ```
 
-# Encrypted private keys
+## Encrypted private keys
 
 When loading private keys, you can provide an optional password if the private key is encrypted.
 **Important**: You have to install with all optional dependencies or specifically the `encryption` extra to use this feature, as it depends on the `bcrypt` package.
@@ -126,7 +126,7 @@ assert AsymmetricAlgorithm.RS256.verify(
 )
 ```
 
-# Using this enum in your own code
+## Using this enum in your own code
 
 You can use the `SymmetricAlgorithm` and `AsymmetricAlgorithm` enums in your own code to select algorithms dynamically. For example, when your client has a signature, they can send the algorithm name along it and you can parse it using the enum:
 
@@ -144,11 +144,11 @@ def index(request):
     # Process the request
 ```
 
-# How to generate keys
+## How to generate keys
 
 In case you don't have keys yet, here are some examples of how to generate them.
 
-## HMAC
+### HMAC
 
 Symmetric HMAC-SHA is just some random bytes:
 
@@ -160,7 +160,7 @@ openssl rand -base64 32 > hmac_secret.key
 python -c "import os; print(os.urandom(32).hex())" > hmac_secret.key
 ```
 
-## RSA
+### RSA
 
 Using openssl:
 
@@ -182,7 +182,7 @@ ssh-keygen -t rsa -b 2048 -m PEM -f rsa_private.pem
 ssh-keygen -y -f rsa_private.pem > rsa_public.pem
 ```
 
-## ECDSA
+### ECDSA
 
 Using openssl:
 
@@ -204,7 +204,7 @@ ssh-keygen -t ecdsa -b 256 -m PEM -f ecdsa_private.pem
 ssh-keygen -y -f ecdsa_private.pem > ecdsa_public.pem
 ```
 
-## EdDSA (Ed25519)
+### EdDSA (Ed25519)
 
 Using openssl:
 
