@@ -1,4 +1,26 @@
-"""Implement the `SymmetricAlgorithm` and `AsymmetricAlgorithm` enums with methods to generate keys/secrets, sign data, and verify signatures."""
+"""Implement the `SymmetricAlgorithm` and `AsymmetricAlgorithm` enums with methods to generate keys/secrets, sign data, and verify signatures.
+
+Example usage::
+    from jws_algorithms.algorithms import SymmetricAlgorithm, AsymmetricAlgorithm
+
+    # Symmetric example
+    secret = SymmetricAlgorithm.HS256.generate_secret()
+    payload = "Hello, world!"
+    signature = SymmetricAlgorithm.HS256.sign(secret, payload)
+    is_valid = SymmetricAlgorithm.HS256.verify(secret, payload, signature)
+    print(f"Symmetric signature valid: {is_valid}")
+
+    # Asymmetric example
+    public_key, private_key = AsymmetricAlgorithm.RS256.generate_keypair()
+    payload = "Hello, world!"
+    signature = AsymmetricAlgorithm.RS256.sign(private_key, payload)
+    is_valid = AsymmetricAlgorithm.RS256.verify(public_key, payload, signature)
+    print(f"Asymmetric signature valid: {is_valid}")
+
+    # JWK example
+    jwk = AsymmetricAlgorithm.RS256.to_jwk(public_key)
+    print(f"JWK representation: {jwk}")
+"""
 
 import hashlib
 import hmac
@@ -10,6 +32,8 @@ from pathlib import Path
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, padding, rsa
+
+from jws_algorithms.jwk import _ec_public_to_jwk, _okp_public_to_jwk, _rsa_public_to_jwk
 
 
 @dataclass
@@ -359,6 +383,112 @@ class AsymmetricAlgorithm(Enum):
         except InvalidSignature:
             return False
         return True
+
+    def to_jwk(
+        self,
+        key: (
+            rsa.RSAPublicKey
+            | rsa.RSAPrivateKey
+            | ec.EllipticCurvePublicKey
+            | ec.EllipticCurvePrivateKey
+            | ed25519.Ed25519PublicKey
+            | ed25519.Ed25519PrivateKey
+            | ed448.Ed448PublicKey
+            | ed448.Ed448PrivateKey
+            | Path
+            | str
+            | bytes
+        ),
+        password: bytes | str | None = None,
+        *,
+        include_private: bool = False,
+    ) -> dict:
+        """Return the JWK (JSON Web Key) representation of the public key.
+
+        If a private key is provided, its corresponding public key will be extracted
+        unless `include_private` is `True`, in which case the private key
+        components will be included in the returned dictionary as well.
+
+        Args:
+            key: The key to convert. Can be a public or private key object, a Path to a PEM/DER encoded file, or bytes/str with PEM/DER encoded key data. A `str` will be treated as utf-8 bytes.
+            password: Optional password if the key is an encrypted private key. A `str` will be treated as utf-8 bytes.
+            include_private: If `True` and a private key is provided, include the private key components in the JWK output. Defaults to `False`.
+
+        Returns:
+            A dictionary containing the JWK representation of the key, including `kty`, coordinate fields, `alg`, and `use` ("sig"). When `include_private` is `True` and a private key is available, additional private key fields are included (e.g. `d` for EC/EdDSA, `d`, `p`, `q`, `dp`, `dq`, `qi` for RSA).
+
+        Raises:
+            TypeError: If the key type is unsupported.
+            ValueError: If the key could not be loaded.
+
+        """
+        private_key = None
+
+        if isinstance(key, (Path, str, bytes)):
+            try:
+                key = self._load_pubkey(key)
+            except (ValueError, TypeError, Exception):  # noqa: BLE001
+                key = self._load_pk(key, password=password)
+
+        if isinstance(
+            key,
+            (
+                rsa.RSAPrivateKey,
+                ec.EllipticCurvePrivateKey,
+                ed25519.Ed25519PrivateKey,
+                ed448.Ed448PrivateKey,
+            ),
+        ):
+            if include_private:
+                private_key = key
+            key = key.public_key()
+
+        if isinstance(key, rsa.RSAPublicKey) and self in (
+            AsymmetricAlgorithm.RS256,
+            AsymmetricAlgorithm.RS384,
+            AsymmetricAlgorithm.RS512,
+            AsymmetricAlgorithm.PS256,
+            AsymmetricAlgorithm.PS384,
+            AsymmetricAlgorithm.PS512,
+        ):
+            return _rsa_public_to_jwk(
+                key,
+                self.name,
+                private_key if isinstance(private_key, rsa.RSAPrivateKey) else None,
+            )
+
+        if isinstance(key, ec.EllipticCurvePublicKey) and self in (
+            AsymmetricAlgorithm.ES256,
+            AsymmetricAlgorithm.ES384,
+            AsymmetricAlgorithm.ES512,
+        ):
+            return _ec_public_to_jwk(
+                key,
+                self.name,
+                (
+                    private_key
+                    if isinstance(private_key, ec.EllipticCurvePrivateKey)
+                    else None
+                ),
+            )
+
+        if self is AsymmetricAlgorithm.EdDSA and isinstance(
+            key,
+            (ed25519.Ed25519PublicKey, ed448.Ed448PublicKey),
+        ):
+            return _okp_public_to_jwk(
+                key,
+                self.name,
+                (
+                    private_key
+                    if isinstance(
+                        private_key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey)
+                    )
+                    else None
+                ),
+            )
+
+        raise ValueError("Unsupported algorithm or key type.")
 
     def _get_hash_algorithm(self) -> hashes.HashAlgorithm:
         """Determine which hash algorithm to use for this algorithm."""

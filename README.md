@@ -144,6 +144,34 @@ def index(request):
     # Process the request
 ```
 
+## JWK (JSON Web Key) export
+
+You can export the keys to JWK format according to the algorithm used when calling the `to_jwk` method on the key object.
+It will return a dictionary with the JWK representation of the key, that you then can publish or use in other libraries that support JWK.
+
+```python
+from jws_algorithms import AsymmetricAlgorithm
+
+# Generate a new RSA key pair
+public_key, private_key = AsymmetricAlgorithm.RS256.generate_keypair()
+
+# Export the public key to JWK format
+public_jwk = AsymmetricAlgorithm.RS256.to_jwk(public_key)
+```
+
+As a safety precaution, passing the private key will also yield the
+public key's JWK representation.
+
+```python
+public_jwk = AsymmetricAlgorithm.RS256.to_jwk(private_key)
+```
+
+If you know what you are doing, you can export the private key by explicitly enabling the `include_private` flag
+
+```python
+private_jwk = AsymmetricAlgorithm.RS256.to_jwk(private_key, include_private=True)
+```
+
 ## How to generate keys
 
 In case you don't have keys yet, here are some examples of how to generate them.
