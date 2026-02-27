@@ -409,8 +409,8 @@ class AsymmetricAlgorithm(Enum):
             | str
             | bytes
         ),
-        password: bytes | str | None = None,
         *,
+        password: bytes | str | None = None,
         include_private: bool = False,
     ) -> (
         RSAPrivateJWK
@@ -428,6 +428,8 @@ class AsymmetricAlgorithm(Enum):
 
         Args:
             key: The key to convert. Can be a public or private key object, a Path to a PEM/DER encoded file, or bytes/str with PEM/DER encoded key data. A `str` will be treated as utf-8 bytes.
+
+        Kwargs:
             password: Optional password if the key is an encrypted private key. A `str` will be treated as utf-8 bytes.
             include_private: If `True` and a private key is provided, include the private key components in the JWK output. Defaults to `False`.
 
