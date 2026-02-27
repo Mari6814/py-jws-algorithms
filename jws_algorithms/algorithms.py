@@ -33,7 +33,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, padding, rsa
 
-from jws_algorithms.jwk import _ec_public_to_jwk, _okp_public_to_jwk, _rsa_public_to_jwk
+from jws_algorithms.jwk import ec_public_to_jwk, okp_public_to_jwk, rsa_public_to_jwk
 
 
 @dataclass
@@ -451,7 +451,7 @@ class AsymmetricAlgorithm(Enum):
             AsymmetricAlgorithm.PS384,
             AsymmetricAlgorithm.PS512,
         ):
-            return _rsa_public_to_jwk(
+            return rsa_public_to_jwk(
                 key,
                 self.name,
                 private_key if isinstance(private_key, rsa.RSAPrivateKey) else None,
@@ -462,7 +462,7 @@ class AsymmetricAlgorithm(Enum):
             AsymmetricAlgorithm.ES384,
             AsymmetricAlgorithm.ES512,
         ):
-            return _ec_public_to_jwk(
+            return ec_public_to_jwk(
                 key,
                 self.name,
                 (
@@ -476,7 +476,7 @@ class AsymmetricAlgorithm(Enum):
             key,
             (ed25519.Ed25519PublicKey, ed448.Ed448PublicKey),
         ):
-            return _okp_public_to_jwk(
+            return okp_public_to_jwk(
                 key,
                 self.name,
                 (

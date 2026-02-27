@@ -32,7 +32,7 @@ def _base64url_uint(value: int) -> str:
     return _base64url_encode(value.to_bytes(byte_length, byteorder="big"))
 
 
-def _rsa_public_to_jwk(
+def rsa_public_to_jwk(
     key: rsa.RSAPublicKey,
     alg: str,
     private_key: rsa.RSAPrivateKey | None = None,
@@ -61,7 +61,7 @@ def _rsa_public_to_jwk(
     return jwk
 
 
-def _ec_public_to_jwk(
+def ec_public_to_jwk(
     key: ec.EllipticCurvePublicKey,
     alg: str,
     private_key: ec.EllipticCurvePrivateKey | None = None,
@@ -94,7 +94,7 @@ def _ec_public_to_jwk(
     return jwk
 
 
-def _okp_public_to_jwk(
+def okp_public_to_jwk(
     key: ed25519.Ed25519PublicKey | ed448.Ed448PublicKey,
     alg: str,
     private_key: ed25519.Ed25519PrivateKey | ed448.Ed448PrivateKey | None = None,
