@@ -33,7 +33,17 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, ed448, ed25519, padding, rsa
 
-from jws_algorithms.jwk import ec_public_to_jwk, okp_public_to_jwk, rsa_public_to_jwk
+from jws_algorithms.jwk import (
+    ECPrivateJWK,
+    ECPublicJWK,
+    OKPPrivateJWK,
+    OKPPublicJWK,
+    RSAPrivateJWK,
+    RSAPublicJWK,
+    ec_public_to_jwk,
+    okp_public_to_jwk,
+    rsa_public_to_jwk,
+)
 
 
 @dataclass
@@ -402,7 +412,14 @@ class AsymmetricAlgorithm(Enum):
         password: bytes | str | None = None,
         *,
         include_private: bool = False,
-    ) -> dict:
+    ) -> (
+        RSAPrivateJWK
+        | RSAPublicJWK
+        | ECPublicJWK
+        | ECPrivateJWK
+        | OKPPublicJWK
+        | OKPPrivateJWK
+    ):
         """Return the JWK (JSON Web Key) representation of the public key.
 
         If a private key is provided, its corresponding public key will be extracted
